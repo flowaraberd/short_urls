@@ -22,7 +22,6 @@ session.cookies.set("recent", cookie_value, domain=".is.gd", path="/")
 
 
 def start_shorter():
-
     try:
         with open(CONFIG.PATH_URLS_START) as urls:
             for url in urls.readlines():
@@ -56,6 +55,54 @@ def start_shorter():
                         urls_end.write(url_shorter + '\n')
                         # show short url
                         print(url_shorter)
+    except Exception as error:
+        capture_error(str(error), 'Open File Error')
+
+
+def start_shorter_custom():
+    try:
+        with open(CONFIG.PATH_URLS_START) as urls:
+            for url in urls.readlines():
+                url = str(url).strip()
+                if url != "":
+                    url = urllib.parse.quote(url)
+                    # Header for request
+                    headers = {
+                        'user-agent': user_agent,
+                        'authority': 'is.gd',
+                        'referrer': 'https://is.gd/create.php',
+                        'credentials': 'omit',
+                        'mode': 'cors',
+                        'content-type': 'application/x-www-form-urlencoded'
+                    }
+                    # Body for request the short url
+                    body = f'url={url}&shorturl=&opt=0'
+                    # send request
+                    response_html_check = requests.post(CONFIG.URL_PAGE_CHECKURL, headers=headers, data=body)
+                    if response_html_check.status_code == 406:
+                        start_shorter_custom()
+                    else:
+                        custom_random_url = ''
+                        custom_random_url_keyword = '82afrs67e'
+                        for letter in range(len(custom_random_url_keyword)):
+                            custom_random_url += random.choice(custom_random_url_keyword)
+
+                        body = f'url={url}&shorturl={CONFIG.CUSTOM_URL}_{custom_random_url}&opt=0'
+                        response_html = requests.post(CONFIG.URL_PAGE_OFFICE, headers=headers, data=body)
+                        # updating session cookie
+                        session.cookies.set("recent", response_html.cookies.get('recent'), domain=".is.gd", path="/")
+                        # converter to HTML content, for then work with that
+                        bs = BeautifulSoup(response_html.content, 'html.parser')
+                        # get url
+                        try:
+                            url_shorter = bs.find('input', attrs={'id': 'short_url'}).get('value')
+                        except Exception as error:
+                            capture_error(str(error), 'Error to get short url')
+                        # save short url
+                        with open(CONFIG.PATH_URLS_END_CUSTOM, 'a') as urls_end:
+                            urls_end.write(url_shorter + '\n')
+                            # show short url
+                            print(url_shorter)
     except Exception as error:
         capture_error(str(error), 'Open File Error')
 

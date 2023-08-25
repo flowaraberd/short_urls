@@ -13,4 +13,5 @@
 * Windows: `nombre_carpeta/Scripts/activate`
 * Linux: `source nombre_carpeta/bin/activate`
 ## EJECUATR SCRIPT
-RUN `python ./main.py`
+RUN `python ./main.py` FOR RANDOM URL
+RUN `python ./main_custom.py` FOR CUSTOM URL
